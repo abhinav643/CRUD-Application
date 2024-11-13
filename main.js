@@ -6,6 +6,10 @@ let errormsg = document.getElementById("errormsg");
 let tasks = document.getElementById("tasks");
 let add = document.getElementById("add");
 
+// Data structure including a history array
+let data = JSON.parse(localStorage.getItem("data")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   formValidation();
@@ -18,66 +22,67 @@ let formValidation = () => {
   } else {
     console.log("Success");
     errormsg.innerHTML = "";
-    acceptData();
+    addTask();
     add.setAttribute("data-bs-dismiss", "modal");
     add.click();
-
-    (() => {
-      add.setAttribute("data-bs-dismiss", "");
-    })();
+    (() => add.setAttribute("data-bs-dismiss", ""))();
   }
 };
 
-let data = [{}];
-
-let acceptData = () => {
-  data.push({
+// Add a task with active status
+let addTask = () => {
+  let newTask = {
     text: inputTask.value,
     date: inputDate.value,
     description: textarea.value,
-  });
-
+    status: "active", // new field to track status
+  };
+  data.push(newTask);
   localStorage.setItem("data", JSON.stringify(data));
-
-  console.log(data);
   createTasks();
 };
 
+// Create tasks and display based on their status
 let createTasks = () => {
   tasks.innerHTML = "";
-  data.map((x, y) => {
-    return (tasks.innerHTML += `
-    <div id=${y}>
-          <span class="fw-bold">${x.text}</span>
-          <span class="small text-secondary">${x.date}</span>
-          <p>${x.description}</p>
+  data.forEach((task, index) => {
+    if (task.status === "active") { // Only show active tasks
+      tasks.innerHTML += `
+        <div id="${index}">
+          <span class="fw-bold">${task.text}</span>
+          <span class="small text-secondary">${task.date}</span>
+          <p>${task.description}</p>
           <span class="options">
-            <i onClick= "editTask(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
-            <i onClick ="deleteTask(this);createTasks()" class="fas fa-trash-alt"></i>
+            <i onClick="editTask(${index})" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>
+            <i onClick="deleteTask(${index})" class="fas fa-trash-alt"></i>
           </span>
-        </div>
-    `);
+        </div>`;
+    }
   });
-
   resetForm();
 };
 
-let editTask = (e) => {
-  let selectedTask = e.parentElement.parentElement;
+// Edit a task and save previous version to history
+let editTask = (index) => {
+  let task = data[index];
+  inputTask.value = task.text;
+  inputDate.value = task.date;
+  textarea.value = task.description;
 
-  inputTask.value = selectedTask.children[0].innerHTML;
-  inputDate.value = selectedTask.children[1].innerHTML;
-  textarea.value = selectedTask.children[2].innerHTML;
+  // Store the original task in the history before modification
+  let modifiedTask = { ...task };
+  history.push(modifiedTask);
+  localStorage.setItem("history", JSON.stringify(history));
 
-  deleteTask(e);
+  // Remove the task before adding the edited version
+  deleteTask(index);
 };
 
-let deleteTask = (e) => {
-  e.parentElement.parentElement.remove();
-  data.splice(e.parentElement.parentElement.id, 1);
+// Mark a task as deleted and save to data
+let deleteTask = (index) => {
+  data[index].status = "deleted"; // mark as deleted instead of removing
   localStorage.setItem("data", JSON.stringify(data));
-  console.log(data);
-  
+  createTasks();
 };
 
 let resetForm = () => {
@@ -86,8 +91,7 @@ let resetForm = () => {
   textarea.value = "";
 };
 
+// Initial loading of data and task creation
 (() => {
-  data = JSON.parse(localStorage.getItem("data")) || []
-  console.log(data);
   createTasks();
 })();
