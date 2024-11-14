@@ -9,98 +9,94 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  -webkit-animation: rightLoop 8s ease infinite;
-  -moz-animation: rightLoop 8s ease infinite;
   animation: rightLoop 8s ease infinite;
 }
 
 .list {
   background-color: #fff;
   width: 350px;
-  height: 535px;
+  height: 600px;
   padding: 15px;
   border: 5px solid #a39fbc;
   border-radius: 14px;
   overflow-y: scroll;
-}
-
-.mb-3{
-  text-align: center;
-}
-
-.list::-webkit-scrollbar {
-  width: 0 !important;
+  position: relative;
 }
 
 #addNew {
   background-color: #ccc7ef;
   padding: 5px 10px;
-  justify-content: space-between;
-  align-items: center;
-  display: flex;
   border-radius: 7px;
-  cursor: pointer;
+  display: flex;
   justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 15px;
 }
 
-.fa-plus {
-  background-color: #ccc7ef;
-  padding: 5px;
-  border-radius: 5px;
+#addNew .fa-plus {
+  font-size: 18px;
+  color: #484848;
 }
 
-#tasks {
-  display: inline-block grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-}
-
-#tasks div {
+#tasks div, #deletedTasks div, #modifiedTasks div {
   background-color: #ccc7ef;
   border-radius: 7px;
-  display: grid;
   margin-bottom: 10px;
-  padding: 6px 10px;
-  gap: 4px;
-  word-break: break-word; 
-}
-
-#tasks div .options {
-  justify-self: center;
+  padding: 10px;
+  word-break: break-word;
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-#tasks div .options i {
+#tasks div span, #deletedTasks div span, #modifiedTasks div span {
+  display: block;
+}
+
+#tasks div .options, #deletedTasks div .options, #modifiedTasks div .options {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+#tasks div .options i, #deletedTasks div .options i {
   cursor: pointer;
+  font-size: 16px;
 }
 
-#textarea::placeholder{
-  color: #00000080;
+h5 {
+  color: #484848;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-#errormsg {
-  color: rgb(255, 0, 0);
+button {
+  margin: 5px 0;
 }
 
-#taskLine{
-  color: #a39fbc;
+#deletedTasks, #modifiedTasks {
+  margin-top: 10px;
+  padding: 10px;
+  border-top: 1px solid #a39fbc;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
-@-webkit-keyframes rightLoop {
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
-@-moz-keyframes rightLoop {
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+#deletedLine, #modifiedLine {
+  border-color: #a39fbc;
+  margin: 10px 0;
 }
 
 @keyframes rightLoop {
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

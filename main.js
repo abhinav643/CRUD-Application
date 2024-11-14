@@ -4,11 +4,16 @@ let inputDate = document.getElementById("inputDate");
 let textarea = document.getElementById("textarea");
 let errormsg = document.getElementById("errormsg");
 let tasks = document.getElementById("tasks");
+let deletedTasks = document.getElementById("deletedTasks");
+let modifiedTasks = document.getElementById("modifiedTasks");
+let deletedRecordsSection = document.getElementById("deletedRecordsSection");
+let modifiedRecordsSection = document.getElementById("modifiedRecordsSection");
 let add = document.getElementById("add");
 
-// Data structure including a history array
 let data = JSON.parse(localStorage.getItem("data")) || [];
-let history = JSON.parse(localStorage.getItem("history")) || [];
+let modifiedRecords = JSON.parse(localStorage.getItem("modifiedRecords")) || [];
+let isEdit = false;
+let editIndex = null;
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -17,36 +22,33 @@ form.addEventListener("submit", (e) => {
 
 let formValidation = () => {
   if (inputTask.value === "") {
-    console.log("Failed");
     errormsg.innerHTML = "Task cannot be blank";
   } else {
-    console.log("Success");
     errormsg.innerHTML = "";
-    addTask();
+    isEdit ? updateTask() : addTask();
     add.setAttribute("data-bs-dismiss", "modal");
     add.click();
     (() => add.setAttribute("data-bs-dismiss", ""))();
   }
 };
 
-// Add a task with active status
 let addTask = () => {
   let newTask = {
     text: inputTask.value,
     date: inputDate.value,
     description: textarea.value,
-    status: "active", // new field to track status
+    status: "active",
+    modified: false, // New field to track if a task has been modified
   };
   data.push(newTask);
   localStorage.setItem("data", JSON.stringify(data));
   createTasks();
 };
 
-// Create tasks and display based on their status
 let createTasks = () => {
   tasks.innerHTML = "";
   data.forEach((task, index) => {
-    if (task.status === "active") { // Only show active tasks
+    if (task.status === "active") {
       tasks.innerHTML += `
         <div id="${index}">
           <span class="fw-bold">${task.text}</span>
@@ -62,27 +64,80 @@ let createTasks = () => {
   resetForm();
 };
 
-// Edit a task and save previous version to history
 let editTask = (index) => {
   let task = data[index];
   inputTask.value = task.text;
   inputDate.value = task.date;
   textarea.value = task.description;
-
-  // Store the original task in the history before modification
-  let modifiedTask = { ...task };
-  history.push(modifiedTask);
-  localStorage.setItem("history", JSON.stringify(history));
-
-  // Remove the task before adding the edited version
-  deleteTask(index);
+  isEdit = true;
+  editIndex = index;
 };
 
-// Mark a task as deleted and save to data
-let deleteTask = (index) => {
-  data[index].status = "deleted"; // mark as deleted instead of removing
+let updateTask = () => {
+  data[editIndex].modified = true; // Mark the task as modified
+  modifiedRecords.push({ ...data[editIndex] }); // Save the original version to modified records
+  localStorage.setItem("modifiedRecords", JSON.stringify(modifiedRecords));
+
+  data[editIndex] = {
+    text: inputTask.value,
+    date: inputDate.value,
+    description: textarea.value,
+    status: "active",
+    modified: true,
+  };
   localStorage.setItem("data", JSON.stringify(data));
   createTasks();
+  isEdit = false;
+  editIndex = null;
+};
+
+let deleteTask = (index) => {
+  data[index].status = "deleted";
+  localStorage.setItem("data", JSON.stringify(data));
+  createTasks();
+};
+
+let toggleDeleted = () => {
+  deletedRecordsSection.style.display =
+    deletedRecordsSection.style.display === "none" ? "block" : "none";
+  if (deletedRecordsSection.style.display === "block") {
+    showDeleted();
+  }
+};
+
+let toggleModified = () => {
+  modifiedRecordsSection.style.display =
+    modifiedRecordsSection.style.display === "none" ? "block" : "none";
+  if (modifiedRecordsSection.style.display === "block") {
+    showModified();
+  }
+};
+
+let showDeleted = () => {
+  deletedTasks.innerHTML = "";
+  data.forEach((task) => {
+    if (task.status === "deleted") {
+      deletedTasks.innerHTML += `
+        <div>
+          <span class="fw-bold">${task.text}</span>
+          <span class="small text-secondary">${task.date}</span>
+          <p>${task.description}</p>
+        </div>`;
+    }
+  });
+};
+
+let showModified = () => {
+  modifiedTasks.innerHTML = "";
+  modifiedRecords.forEach((task, index) => {
+    modifiedTasks.innerHTML += `
+      <div>
+        <p>Record ${index + 1}</p>
+        <span class="fw-bold">${task.text}</span>
+        <span class="small text-secondary">${task.date}</span>
+        <p>${task.description}</p>
+      </div>`;
+  });
 };
 
 let resetForm = () => {
@@ -91,7 +146,6 @@ let resetForm = () => {
   textarea.value = "";
 };
 
-// Initial loading of data and task creation
 (() => {
   createTasks();
 })();
